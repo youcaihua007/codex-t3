@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1 — 2026-10-02
+
+构建 52，修复检测更新因 GitHub 公共 API 限流而失败的问题。
+
+- 优先从最新正式 Release 读取小型更新清单，不消耗 REST API 的未登录检测限额；旧版本或 fork 没有清单时兼容原 API。
+- 更新清单随 ZIP 自动生成，包含版本、包大小、下载链接与 SHA-256；继续验证仓库归属、压缩包结构、主程序及组件签名。
+- 取消检测或退出应用后不再启动备用请求；不增加后台定时器、账号授权或设置项。
+- 增加限流、清单缺失/损坏、取消/退出与失败备用请求的回归检查。
+
+Build 52 fixes update checks failing when GitHub's public REST API is rate-limited. Checks now prefer a small manifest attached to the latest stable release, retain the API for older releases/forks, and preserve package integrity and signature checks. No extra background timer, account access or setting is required.
+
 ## 1.0 — 2026-10-02
 
 首个公开版本，构建 51。此前 2.x 标号仅用于本地开发，未作为公开正式版本发行。

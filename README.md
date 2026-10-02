@@ -31,17 +31,19 @@
 
 ## 下载与安装
 
-**[下载最新 DMG](https://github.com/youcaihua007/codex-t3/releases/latest)** · 1.0（构建 51）· 约 2.42 MB · Apple Silicon + Intel
+**[下载最新 DMG](https://github.com/youcaihua007/codex-t3/releases/latest)** · 1.1（构建 52）· 约 2.42 MB · Apple Silicon + Intel
 
-1. 下载 `Codex-T3-1.0-universal.dmg` 并双击打开。
+1. 下载 `Codex-T3-1.1-universal.dmg` 并双击打开。
 2. 把 **Codex T3.app** 拖到右侧 **Applications（应用程序）**。
 3. 复制完成后，从「应用程序」打开 Codex T3，再推出安装磁盘。
 4. 确认「账号与同步」已显示本机账号和额度。
 5. 在桌面空白处右键 → **编辑小组件** → 搜索 **Codex T3**，添加小或中尺寸。
 
+1.1 修复了检测更新受 GitHub 公共 API 限流影响的问题。若 1.0 仍提示检测失败，请从上方链接下载 1.1 并替换应用；设置会保留。以后检测优先使用发布附件中的更新清单。
+
 ### 首次打开被 macOS 拦截？
 
-> **1.0 使用 ad-hoc 签名，尚未经过 Apple 公证。浏览器下载后，首次打开可能需要手动允许。**
+> **1.1 使用 ad-hoc 签名，尚未经过 Apple 公证。浏览器下载后，首次打开可能需要手动允许。**
 
 确认文件来自本仓库的 Releases 后：先尝试打开应用，再进入 **系统设置 → 隐私与安全性**，找到 Codex T3 的拦截提示，点击 **仍要打开（Open Anyway）**，并在后续确认框中点击「打开」。这是对该应用的单独放行；无需关闭系统安全保护。详细流程见 [Apple 官方说明](https://support.apple.com/zh-cn/102445)。
 

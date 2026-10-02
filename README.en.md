@@ -31,17 +31,19 @@ A native macOS desktop widget for the Codex account signed in on this Mac. Warm 
 
 ## Download and install
 
-**[Download the latest DMG](https://github.com/youcaihua007/codex-t3/releases/latest)** · 1.0 (build 51) · about 2.42 MB · Apple Silicon + Intel
+**[Download the latest DMG](https://github.com/youcaihua007/codex-t3/releases/latest)** · 1.1 (build 52) · about 2.42 MB · Apple Silicon + Intel
 
-1. Download and open `Codex-T3-1.0-universal.dmg`.
+1. Download and open `Codex-T3-1.1-universal.dmg`.
 2. Drag **Codex T3.app** to **Applications** on the right.
 3. Open the installed app from Applications, then eject the disk image.
 4. Check your account and usage in Account / Sync.
 5. Right-click the desktop → **Edit Widgets** → search for **Codex T3**, then add a small or medium widget.
 
+1.1 fixes update checks affected by GitHub's public REST API rate limit. If 1.0 still reports a failed check, download 1.1 above and replace the app; your settings are preserved. Future checks prefer the manifest attached to the latest release.
+
 ### macOS blocks the first launch?
 
-> **Version 1.0 is ad-hoc signed and has not been notarized by Apple. A browser download may require manual approval on first launch.**
+> **Version 1.1 is ad-hoc signed and has not been notarized by Apple. A browser download may require manual approval on first launch.**
 
 After verifying that the download came from this repository's Releases, try opening the app, then go to **System Settings → Privacy & Security**. Find the blocked Codex T3 entry, click **Open Anyway**, and confirm **Open**. This creates an exception for this app; you do not need to disable system security. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
