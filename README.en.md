@@ -11,11 +11,17 @@
 
 # Codex T3 · Usage Limits Widget
 
-Keep your remaining Codex allowance quietly in view.
+**Small app. Simple design. Usage at a glance.**
 
-A native macOS desktop widget for the Codex account signed in on this Mac. Warm ivory, restrained type, dot grids and progress bars, inspired by Braun T3.
+The 1.1 universal download is about **2.42 MB**, and the app itself is about **7.45 MB**. A native macOS widget that keeps the remaining allowance for the Codex account signed in on this Mac visible on your desktop and in the menu bar. Warm ivory, restrained type, dot grids and progress bars, inspired by Braun T3.
 
 ![Small and medium widgets with synthetic data](docs/images/en/widgets.png)
+
+## Usage in your menu bar
+
+![Full and compact menu bar displays with synthetic data](docs/images/en/menu-bar.png)
+
+The full display shows the **remaining percentages for all available usage limits**; the example has five-hour and weekly limits. Compact mode shows **only the limit with the least remaining allowance**. Toggle the icon and allowance independently in Display settings.
 
 ## See what you have left
 
