@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="352" viewBox="0 0 1280 352" role="img" aria-labelledby="title desc">
+<title id="title">Codex T3 — Usage Limits Widget</title>
+<desc id="desc">A flat ivory panel with charcoal lettering, an original C-and-dot-grid mark, and a small warm orange accent inspired by Braun T3.</desc>
+<rect width="1280" height="352" rx="30" fill="#e7e5da"/>
+<g font-family="Helvetica Neue,Helvetica,Arial,sans-serif" fill="#31342e">
+<text x="64" y="63" font-size="14" letter-spacing="3">DESKTOP / macOS</text>
+<text x="60" y="163" font-size="74" font-weight="600" letter-spacing="-3">Codex T3</text>
+<text x="64" y="206" font-size="24" fill="#74766e">A quiet view of your Codex usage.</text>
+<path d="M64 260H1216" stroke="#c8c8bd"/>
+<circle cx="71" cy="300" r="7" fill="#c35e32"/>
+<text x="94" y="306" font-size="16" letter-spacing="1">USAGE LIMITS WIDGET</text>
+<text x="1198" y="306" font-size="16" text-anchor="end" fill="#74766e">01 / 1.0</text>
+</g>
+<rect x="820" y="83" width="314" height="166" rx="30" fill="none" stroke="#55594f" stroke-width="5"/>
+<path d="M913 122C900 107 869 113 864 143C859 178 889 199 913 182" fill="none" stroke="#31342e" stroke-width="10" stroke-linecap="round"/>
+<g fill="#74766e"><circle cx="948" cy="112" r="3.1"/>
+<circle cx="970" cy="112" r="3.1"/>
+<circle cx="992" cy="112" r="3.1"/>
+<circle cx="1014" cy="112" r="3.1"/>
+<circle cx="1036" cy="112" r="3.1"/>
+<circle cx="948" cy="134" r="3.1"/>
+<circle cx="970" cy="134" r="3.1"/>
+<circle cx="992" cy="134" r="3.1"/>
+<circle cx="1014" cy="134" r="3.1"/>
+<circle cx="1036" cy="134" r="3.1"/>
+<circle cx="948" cy="156" r="3.1"/>
+<circle cx="970" cy="156" r="3.1"/>
+<circle cx="992" cy="156" r="3.1"/>
+<circle cx="1014" cy="156" r="3.1"/>
+<circle cx="1036" cy="156" r="3.1"/>
+<circle cx="948" cy="178" r="3.1"/>
+<circle cx="970" cy="178" r="3.1"/>
+<circle cx="992" cy="178" r="3.1"/>
+<circle cx="1014" cy="178" r="3.1"/>
+<circle cx="1036" cy="178" r="3.1"/>
+<circle cx="948" cy="200" r="3.1"/>
+<circle cx="970" cy="200" r="3.1"/>
+<circle cx="992" cy="200" r="3.1"/>
+<circle cx="1014" cy="200" r="3.1"/>
+<circle cx="1036" cy="200" r="3.1"/>
+<circle cx="948" cy="222" r="3.1"/>
+<circle cx="970" cy="222" r="3.1"/>
+<circle cx="992" cy="222" r="3.1"/>
+<circle cx="1014" cy="222" r="3.1"/>
+<circle cx="1036" cy="222" r="3.1"/></g>
+</svg>
