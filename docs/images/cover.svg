@@ -9,7 +9,7 @@
 <path d="M64 260H1216" stroke="#c8c8bd"/>
 <circle cx="71" cy="300" r="7" fill="#c35e32"/>
 <text x="94" y="306" font-size="16" letter-spacing="1">USAGE LIMITS WIDGET</text>
-<text x="1198" y="306" font-size="16" text-anchor="end" fill="#74766e">01 / 1.0</text>
+<text x="1198" y="306" font-size="16" text-anchor="end" fill="#74766e">01 / 1.1</text>
 </g>
 <rect x="820" y="83" width="314" height="166" rx="30" fill="none" stroke="#55594f" stroke-width="5"/>
 <path d="M913 122C900 107 869 113 864 143C859 178 889 199 913 182" fill="none" stroke="#31342e" stroke-width="10" stroke-linecap="round"/>
