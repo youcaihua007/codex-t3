@@ -1,0 +1,34 @@
+name: Check and build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: xcode-27
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Isolated regression checks
+        run: python3 Scripts/test.py
+      - name: Real sandbox bridge checks
+        run: python3 Scripts/test-sandbox-bridge.py
+      - name: Universal Release build
+        run: python3 Scripts/build.py --arch universal --derived-data "$RUNNER_TEMP/codex-t3-release" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+      - name: Package local-signed build
+        run: python3 Scripts/package.py "$RUNNER_TEMP/codex-t3-release/Build/Products/Release/Codex T3.app"
+      - name: Create drag-to-Applications DMG
+        run: |
+          python3 -m venv "$RUNNER_TEMP/codex-t3-packaging"
+          "$RUNNER_TEMP/codex-t3-packaging/bin/python" -m pip install -r Scripts/requirements-packaging.txt
+          "$RUNNER_TEMP/codex-t3-packaging/bin/python" Scripts/package-dmg.py "$RUNNER_TEMP/codex-t3-release/Build/Products/Release/Codex T3.app"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: codex-t3-local-signed-universal
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
