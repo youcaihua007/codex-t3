@@ -45,6 +45,7 @@ struct GitHubRepository: Equatable {
     }
     var url: URL { URL(string: "https://github.com/\(owner)/\(name)")! }
     var latestAPI: URL { URL(string: "https://api.github.com/repos/\(owner)/\(name)/releases/latest")! }
+    var latestManifest: URL { url.appendingPathComponent("releases/latest/download/update.json") }
     var releasesURL: URL { url.appendingPathComponent("releases") }
     var feedbackURL: URL { url.appendingPathComponent("issues/new/choose") }
     func ownsDownload(_ url: URL) -> Bool {
@@ -83,6 +84,14 @@ struct AppRelease {
         let checksum = asset.flatMap { selected in response.assets.first { $0.name == selected.name + ".sha256" && $0.size > 0 && $0.size <= 2048 && repository.ownsDownload($0.browserDownloadURL) } }
         return AppRelease(tag: response.tagName, version: version, asset: asset, checksum: checksum, repository: repository)
     }
+    static func decodeManifest(_ data: Data, repository: GitHubRepository, architecture: String) throws -> AppRelease {
+        let release = try decode(data, repository: repository, architecture: architecture)
+        guard let asset = release.asset, release.embeddedDigest != nil,
+              asset.browserDownloadURL == repository.url.appendingPathComponent("releases/download/\(release.tag)/\(asset.name)") else {
+            throw UpdateFailure(message: "更新信息无效或过大。")
+        }
+        return release
+    }
     var embeddedDigest: String? {
         guard let digest = asset?.digest, digest.hasPrefix("sha256:") else { return nil }
         return UpdatePackage.validDigest(String(digest.dropFirst(7)))
@@ -109,8 +118,10 @@ final class UpdateNetwork: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     }()
     func request(_ url: URL) -> URLRequest {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+        if url.host == "api.github.com" {
+            request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+            request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+        } else { request.setValue("application/json", forHTTPHeaderField: "Accept") }
         request.setValue("Codex-T3", forHTTPHeaderField: "User-Agent")
         return request
     }
@@ -512,10 +523,22 @@ final class UpdateController: ObservableObject {
         guard (try? AppVersion(currentVersion)) != nil else { showMessage("开发版本不参与在线更新。"); return }
         clearDownload(); release = nil; phase = .checking; showMessage("正在检测更新…")
         let token = UUID(); generation = token
-        task = network.data(repository.latestAPI) { [weak self] result in
-            let decoded = result.flatMap { data -> Result<AppRelease, Error> in Result { try AppRelease.decode(data, repository: repository, architecture: UpdatePackage.architecture) } }
+        requestRelease(repository, token: token, manifest: true)
+    }
+    private func requestRelease(_ repository: GitHubRepository, token: UUID, manifest: Bool) {
+        // Release assets use GitHub's download service rather than the shared
+        // unauthenticated REST API allowance. Keep older releases/forks usable.
+        task = network.data(manifest ? repository.latestManifest : repository.latestAPI) { [weak self] result in
+            let decoded = result.flatMap { data -> Result<AppRelease, Error> in Result {
+                if manifest { return try AppRelease.decodeManifest(data, repository: repository, architecture: UpdatePackage.architecture) }
+                return try AppRelease.decode(data, repository: repository, architecture: UpdatePackage.architecture)
+            } }
             DispatchQueue.main.async {
                 guard let self, self.generation == token else { return }
+                if manifest, case .failure = decoded {
+                    self.requestRelease(repository, token: token, manifest: false)
+                    return
+                }
                 self.task = nil; self.phase = .idle
                 switch decoded {
                 case .success(let latest):
@@ -605,5 +628,5 @@ final class UpdateController: ObservableObject {
     }
     func openRelease() { if let url = release?.page ?? repository?.releasesURL { NSWorkspace.shared.open(url) } }
     func openFeedback() { if let url = repository?.feedbackURL { NSWorkspace.shared.open(url) } }
-    func stop() { task?.cancel(); network.stop(); if phase != .installing { clearDownload() } }
+    func stop() { generation = UUID(); task?.cancel(); network.stop(); if phase != .installing { clearDownload() } }
 }
