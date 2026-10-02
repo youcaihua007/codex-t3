@@ -4,13 +4,20 @@ final class FixtureProtocol: URLProtocol {
     static var body = Data()
     static var archive = Data()
     static var status = 200
+    static var manifestStatus: Int?
+    static var manifestBody: Data?
+    static var paused = false
     static var requests: [URLRequest] = []
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
+        precondition(request.value(forHTTPHeaderField:"Authorization") == nil && request.value(forHTTPHeaderField:"Cookie") == nil)
         Self.requests.append(request)
-        let bytes = request.url!.path.hasSuffix(".zip") ? Self.archive : Self.body
-        let response = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: "HTTP/1.1", headerFields: ["Content-Length":String(bytes.count)])!
+        if Self.paused { return }
+        let manifest = request.url!.path.hasSuffix("/update.json")
+        let bytes = request.url!.path.hasSuffix(".zip") ? Self.archive : manifest ? Self.manifestBody ?? Self.body : Self.body
+        let status = manifest ? Self.manifestStatus ?? Self.status : Self.status
+        let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: "HTTP/1.1", headerFields: ["Content-Length":String(bytes.count)])!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: bytes); client?.urlProtocolDidFinishLoading(self)
     }
@@ -58,8 +65,12 @@ final class FixtureProtocol: URLProtocol {
         }
         let release = try AppRelease.decode(response(), repository: repo, architecture: "arm64")
         precondition(release.asset?.name == "Codex-T3-3.0.0-universal.zip" && release.embeddedDigest == digest)
+        let manifestRelease = try AppRelease.decodeManifest(response(), repository:repo, architecture:"arm64")
+        precondition(manifestRelease.embeddedDigest == digest)
         let wrongOrigin = try AppRelease.decode(response(download:"https://evil.test/new.zip"), repository: repo, architecture: "arm64")
         precondition(wrongOrigin.asset == nil)
+        rejected { _ = try AppRelease.decodeManifest(response(download:"https://evil.test/new.zip"), repository:repo, architecture:"arm64") }
+        rejected { _ = try AppRelease.decodeManifest(response(download:"https://github.com/example/Codex-T3/releases/download/v9.0.0/Codex-T3-3.0.0-universal.zip"), repository:repo, architecture:"arm64") }
         rejected { _ = try AppRelease.decode(response(prerelease:true), repository: repo, architecture: "arm64") }
         for code in [403,404,429,500] { rejected { try UpdateNetwork.check(HTTPURLResponse(url: repo.latestAPI, statusCode: code, httpVersion:nil,headerFields:nil)) } }
         let current = root.appendingPathComponent("current/Codex T3.app")
@@ -91,13 +102,36 @@ final class FixtureProtocol: URLProtocol {
         unconfigured.check();precondition(FixtureProtocol.requests.isEmpty && unconfigured.repository == nil)
         precondition(updater.repository == repo)
         FixtureProtocol.body = try response();FixtureProtocol.archive=bytes
+        FixtureProtocol.manifestBody = try response();FixtureProtocol.manifestStatus=200;FixtureProtocol.status=403
         updater.check();spin { updater.phase == .idle }
         precondition(updater.release?.version == release.version && updater.lastChecked != nil)
+        precondition(FixtureProtocol.requests.count == 1 && FixtureProtocol.requests[0].url == repo.latestManifest, "An API rate limit must not affect manifest checks")
+        FixtureProtocol.status=200
         updater.download();spin { updater.phase == .ready || updater.phase == .idle }
         precondition(updater.phase == .ready, updater.message)
         updater.cancel();precondition(updater.phase == .idle)
-        FixtureProtocol.status=404;updater.check();spin { updater.phase == .idle }
+        FixtureProtocol.manifestStatus=404;FixtureProtocol.status=404;updater.check();spin { updater.phase == .idle }
         precondition(updater.release == nil && updater.message.contains("暂无"))
+        FixtureProtocol.requests=[];FixtureProtocol.status=200
+        updater.check();spin { updater.phase == .idle }
+        precondition(updater.release?.version == release.version && FixtureProtocol.requests.map(\.url) == [repo.latestManifest,repo.latestAPI], "Older releases without a manifest must fall back to the API")
+        FixtureProtocol.requests=[];FixtureProtocol.manifestStatus=200;FixtureProtocol.manifestBody=Data("invalid".utf8)
+        updater.check();spin { updater.phase == .idle }
+        precondition(updater.release?.version == release.version && FixtureProtocol.requests.count == 2)
+        FixtureProtocol.requests=[];FixtureProtocol.manifestStatus=404;FixtureProtocol.status=429
+        updater.check();spin { updater.phase == .idle }
+        precondition(updater.release == nil && updater.message.contains("受限"))
+        FixtureProtocol.requests=[];FixtureProtocol.manifestStatus=200;FixtureProtocol.manifestBody=try response();FixtureProtocol.paused=true
+        updater.check();updater.check();spin { FixtureProtocol.requests.count == 1 }
+        updater.cancel();FixtureProtocol.paused=false
+        RunLoop.main.run(until:Date().addingTimeInterval(0.1))
+        precondition(updater.phase == .idle && FixtureProtocol.requests.count == 1 && updater.release == nil, "Cancel must not start the API fallback or accept a late response")
+        let stopped = UpdateController(defaults:defaults,bundle:Bundle(url:current)!,network:UpdateNetwork(configuration:config))
+        FixtureProtocol.requests=[];FixtureProtocol.paused=true
+        stopped.check();spin { FixtureProtocol.requests.count == 1 }
+        stopped.stop();FixtureProtocol.paused=false
+        RunLoop.main.run(until:Date().addingTimeInterval(0.1))
+        precondition(FixtureProtocol.requests.count == 1 && stopped.release == nil, "Shutdown must not start a fallback on an invalidated session")
         precondition(FixtureProtocol.requests.allSatisfy { $0.value(forHTTPHeaderField:"Authorization") == nil && $0.value(forHTTPHeaderField:"Cookie") == nil })
         defaults.set("https://github.com/other/old-project", forKey:"update.repository")
         defaults.set(Date(), forKey:"update.lastChecked")
@@ -108,7 +142,7 @@ final class FixtureProtocol: URLProtocol {
         defaults.set("https://github.com/other/new-project", forKey:"update.repository")
         precondition(fixed.repository == repo)
         FixtureProtocol.status=200;fixed.check();spin { fixed.phase == .idle }
-        precondition(FixtureProtocol.requests.last?.url == repo.latestAPI && fixed.release?.version == release.version)
-        print("Passed: fixed embedded update/feedback source overrides old preferences and rejects redirection; repository/version rules, release selection, HTTP failures, SHA-256, archive traversal/symlink/duplicate/bomb/header/CRC rejection and bounded decompression, code signatures/version validation, atomic install/rollback, cookie-free check/download/prepare/cancel without live network")
+        precondition(FixtureProtocol.requests.last?.url == repo.latestManifest && fixed.release?.version == release.version)
+        print("Passed: public release manifest works during API rate limiting; legacy/malformed manifest fallback, failed fallback, check coalescing/cancellation, fixed repository, SHA-256, archive bounds, code signatures, atomic install/rollback and cookie-free download/prepare without live network")
     }
 }
