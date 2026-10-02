@@ -32,7 +32,7 @@ Install a compatible Codex executable that supports `app-server`, then sign in w
 
 ## Build and install
 
-**Current release: 1.0 (build 51), the first public version.**
+**Current release: 1.1 (build 52).**
 
 ![Account and sync settings with a synthetic account](images/en/account.png)
 
@@ -84,7 +84,7 @@ Discovery checks bundled Codex executables in ChatGPT and Codex, the user applic
 
 About shows the app version. Check for updates looks for the latest stable release in the public GitHub repository. The app downloads a compatible archive, verifies it, then offers Install and restart. An installation error restores the previous app. If the installation folder is not writable, use the release page for a manual replacement.
 
-The update and feedback source is built in: [youcaihua007/codex-t3](https://github.com/youcaihua007/codex-t3). About shows a read-only project link; users do not enter or change a repository. Legacy manual settings cannot override the embedded source. Fork maintainers can embed their own URL with `Scripts/build.py --repository https://github.com/OWNER/REPO`; CI embeds its own repository. Upload `Codex-T3-VERSION-universal.zip` (or the matching architecture) and its `.zip.sha256` file. GitHub's SHA-256 digest is preferred, with the sidecar as a fallback. Packages without integrity information require a manual download; drafts, prereleases and equal/older versions are not installed.
+The update and feedback source is built in: [youcaihua007/codex-t3](https://github.com/youcaihua007/codex-t3). About shows a read-only project link; users do not enter or change a repository. Legacy manual settings cannot override the embedded source. 1.1 first reads `update.json` attached to the latest stable release, avoiding the public REST API allowance; releases or forks without a manifest fall back to the API. If 1.0 reports a rate-limited check, download and install 1.1 manually to retain your settings. Fork maintainers can embed their own URL with `Scripts/build.py --repository https://github.com/OWNER/REPO`; CI embeds its own repository. Upload the generated manifest with `Codex-T3-VERSION-universal.zip` (or the matching architecture) and its `.zip.sha256` file. The manifest provides the ZIP's SHA-256, with the API digest or sidecar available on the legacy path. Packages without integrity information require a manual download; drafts, prereleases and equal/older versions are not installed.
 
 The updater verifies SHA-256, ZIP paths/types/sizes/CRC, native architecture, bundle identifiers, app/widget versions and code signatures. For Developer ID-signed installations, the Apple certificate anchor and Team ID must match. Ad-hoc distribution trusts the embedded HTTPS GitHub repository; its checksum is not independent publisher authentication.
 

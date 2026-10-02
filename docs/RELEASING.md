@@ -1,6 +1,6 @@
 # 发布指南
 
-源码公开和公众应用发行是两个步骤。源码包不含作者账号、编译产物或开发者证书。当前本地 1.0 应用已完成 ad-hoc 签名验证，但尚未完成 Developer ID 签名、公证和其他系统版本实机验证。
+源码公开和公众应用发行是两个步骤。源码包不含作者账号、编译产物或开发者证书。当前 1.1 使用 ad-hoc 签名，尚未完成 Developer ID 签名、公证和其他系统版本实机验证。
 
 ## 源码仓库
 
@@ -33,7 +33,7 @@ python3 Scripts/build.py --arch universal --derived-data /tmp/codex-t3-release  
 
 ```sh
 python3 Scripts/package.py "/tmp/codex-t3-release/Build/Products/Release/Codex T3.app"
-xcrun notarytool submit dist/Codex-T3-1.0-universal.zip --keychain-profile YOUR_PROFILE --wait
+xcrun notarytool submit dist/Codex-T3-1.1-universal.zip --keychain-profile YOUR_PROFILE --wait
 xcrun stapler staple "/tmp/codex-t3-release/Build/Products/Release/Codex T3.app"
 xcrun stapler validate "/tmp/codex-t3-release/Build/Products/Release/Codex T3.app"
 spctl --assess --type execute --verbose=2 "/tmp/codex-t3-release/Build/Products/Release/Codex T3.app"
@@ -54,7 +54,7 @@ DMG 打包环境需要 Python 3.10+。窗口提供 App、Applications 快捷方�
 
 Developer ID 分发时先给 App 完成公证并 staple，再重新生成 ZIP 和 DMG。需要将 DMG 本身也公证时，对最终 DMG 执行 notarytool submit 与 stapler staple，随后重新生成它的 SHA-256；不能沿用 staple 前的校验值。
 
-上传 DMG 与对应 SHA-256、更新 ZIP 与对应 SHA-256 作为 GitHub Release 附件，源码留在仓库；不要把 `.app` 直接提交到 git 历史。未公证的本地测试包不要标为已公证。
+上传 DMG 与对应 SHA-256、更新 ZIP 与对应 SHA-256，以及 ZIP 打包脚本自动生成的 `update.json`，作为 GitHub Release 附件。五个附件全部上传完成后再发布，源码留在仓库；不要把 `.app` 直接提交到 git 历史。未公证的本地测试包不要标为已公证。
 
 ## 图标资源
 
@@ -91,11 +91,13 @@ CI 使用 GitHub 的 `xcode-27` macOS 27 ARM runner（当前为公开预览）�
 
 项目默认内置 `https://github.com/youcaihua007/codex-t3`。关于页只显示项目链接，不提供填写、保存或更改控件；内置来源优先于旧版手动设置。维护 fork 时使用 `--repository https://github.com/OWNER/REPO` 在构建时指定自己的公开仓库。GitHub Actions 使用自身仓库地址。发布时保留 Issues 与 bug report / suggestion 模板。
 
-应用按 GitHub 最新非草稿、非预发布 Release 检测更新。tag 使用 `v1.0` 或 `1.0` 一类数字版本号；每次更新必须递增版本，主程序和组件的 Info.plist 版本一致。首次安装提供 DMG，内置更新仍需上传标准命名的通用应用 ZIP 和 `.zip.sha256`；不要只上传源代码 ZIP。缺少兼容架构应用包或校验信息时，应用将引导手动下载。
+应用按 GitHub 最新非草稿、非预发布 Release 检测更新。从 1.1 起，优先读取 `releases/latest/download/update.json` 发布附件；这是 [GitHub 支持的最新附件链接](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases)，不消耗 REST API 的未登录请求限额。清单不存在或无效时备用 API，兼容旧发布与 fork。[公共 API 的未登录限额按来源 IP 共享](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)，不由应用或 GitHub 网页登录单独控制。
+
+新发行统一使用 `vVERSION` tag，例如 `v1.1`，与自动生成清单的链接一致；旧 API 路径仍兼容纯数字 tag。每次更新必须递增版本，主程序和组件的 Info.plist 版本一致。首次安装提供 DMG，内置更新必须上传标准命名的应用 ZIP、`.zip.sha256` 和自动生成的 `update.json`。清单包含正式版本标记、文件名、大小、仓库内下载 URL 和 SHA-256；无需手动编辑。不要只上传源代码 ZIP。缺少兼容架构应用包或校验信息时，应用将引导手动下载。
 
 安装在用户可写的应用目录时，内置 helper 等待主程序退出、停止自身旧组件、替换应用、重新注册并启动新实例；替换或启动请求失败时恢复旧副本。当前没有自动管理员权限提升。用户设置保留。Developer ID 发行时同团队与 Apple 证书锚点需保持一致；ad-hoc 发行依赖内置 GitHub 仓库的 HTTPS 发布信任。
 
-首次从真实 GitHub Release 更新尚需在仓库和发布附件建立后实测；隔离测试使用拦截的 HTTP 响应和临时签名应用，不代替不同电脑、Gatekeeper 或 Intel 实机验证。
+每次发布后，验证公开清单与本地文件一致，并用上一版签名应用验证检测、下载、校验与准备流程。隔离测试使用拦截的 HTTP 响应和临时签名应用，不代替不同电脑、Gatekeeper 或 Intel 实机验证。
 
 ## 1.0 验收记录
 

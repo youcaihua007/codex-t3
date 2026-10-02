@@ -38,7 +38,7 @@
 
 ## 安装与使用
 
-**当前版本：1.0（构建 51），首次公开发行。**
+**当前版本：1.1（构建 52）。**
 
 当前应用包使用本地 ad-hoc 签名，尚未经过 Developer ID 签名与 Apple 公证。可以通过 GitHub 分发，但浏览器下载后 macOS 可能阻止首次打开；确认来源可信后，可按 [Apple 官方说明](https://support.apple.com/zh-cn/102445) 在「隐私与安全性」中选择「仍要打开」。若要通过默认 Gatekeeper 检查，需 Developer ID 签名与公证；这不要求上架 App Store。也可从源码自行构建，详见[发布指南](RELEASING.md)。
 
@@ -98,7 +98,7 @@ python3 Scripts/package.py "/tmp/codex-t3-release/Build/Products/Release/Codex T
 
 在「关于」点击「检测更新」。发现新版本后可下载，经 SHA-256、压缩包和代码签名验证后，点击「安装更新并重启」。当前应用和用户偏好分开保存，替换或启动请求失败时恢复旧版本。安装目录不可写时可从发布说明页手动下载替换。
 
-更新和反馈来源已内置为 [youcaihua007/codex-t3](https://github.com/youcaihua007/codex-t3)，用户无需填写或更改仓库。在「关于」可直接打开项目主页、检测更新和提交反馈。更新读取此项目最新正式 Release，不安装 draft 或 prerelease；旧版手动仓库设置不会覆盖内置来源。开发者分发自己的 fork 时，可用 `Scripts/build.py --repository https://github.com/OWNER/REPO` 在构建时替换地址；Actions 自动内置当前仓库。
+更新和反馈来源已内置为 [youcaihua007/codex-t3](https://github.com/youcaihua007/codex-t3)，用户无需填写或更改仓库。在「关于」可直接打开项目主页、检测更新和提交反馈。1.1 优先读取最新正式 Release 附件中的 `update.json`，避免公共 REST API 的检测限额；没有清单的旧发布或 fork 兼容原 API。不安装 draft 或 prerelease；旧版手动仓库设置不会覆盖内置来源。1.0 若仍提示检测受限，请手动下载安装 1.1，保留现有设置。开发者分发自己的 fork 时，可用 `Scripts/build.py --repository https://github.com/OWNER/REPO` 在构建时替换地址；Actions 自动内置当前仓库。
 
 发布页提供 DMG 和校验文件用于首次安装；内置更新的应用包必须同时提供 `Codex-T3-版本-universal.zip` 或对应架构的命名，上传 ZIP 和同名 `.zip.sha256` 附件。优先使用 GitHub 返回的 SHA-256 digest，缺失时使用校验附件；没有校验信息时仅允许手动下载。更新版本必须大于当前版本，包内主程序和组件版本必须一致。
 
